@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK PENSION ALLOWANCE CALCULATOR</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+        
+        .terminal-container {
+            min-height: 100vh;
+            padding: 20px;
+            background: 
+                radial-gradient(circle at 25% 25%, #333333 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #111111 0%, transparent 50%),
+                #000000;
+        }
+        
+        .terminal-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border: 2px solid #ffffff;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        
+        .terminal-header::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ffffff, #888888, #ffffff);
+            z-index: -1;
+            animation: borderGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes borderGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .ascii-art {
+            font-size: 12px;
+            line-height: 1;
+            color: #ffffff;
+            text-shadow: 0 0 10px #ffffff;
+            margin-bottom: 20px;
+        }
+        
+        .terminal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 20px #ffffff;
+            margin-bottom: 10px;
+            animation: textGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 20px #ffffff; }
+            100% { text-shadow: 0 0 30px #ffffff, 0 0 40px #888888; }
+        }
+        
+        .terminal-subtitle {
+            font-size: 14px;
+            color: #888;
+            font-weight: 300;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .terminal-window {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ffffff;
+            border-radius: 0;
+            padding: 0;
+            position: relative;
+            box-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        .window-header {
+            background: #ffffff;
+            color: #000000;
+            padding: 10px 15px;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #000;
+        }
+        
+        .window-content {
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.5);
+            min-height: 400px;
+        }
+        
+        .prompt {
+            color: #ffffff;
+            font-weight: 500;
+        }
+        
+        .prompt::before {
+            content: "$ ";
+            color: #cccccc;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 5px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .input-label::before {
+            content: "> ";
+            color: #cccccc;
+        }
+        
+        .terminal-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #888888;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .terminal-input:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: rgba(20, 20, 20, 0.3);
+        }
+        
+        .terminal-select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #888888;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+        
+        .terminal-select:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .execute-btn {
+            background: linear-gradient(45deg, #ffffff, #888888);
+            color: #000000;
+            border: none;
+            padding: 12px 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .execute-btn:hover {
+            background: linear-gradient(45deg, #888888, #ffffff);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .output-line {
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        .output-value {
+            color: #cccccc;
+            font-weight: 700;
+        }
+        
+        .output-label {
+            color: #888888;
+        }
+        
+        .warning {
+            color: #ffffff;
+            background: rgba(100, 100, 100, 0.1);
+            border-left: 3px solid #ffffff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: #cccccc;
+            background: rgba(150, 150, 150, 0.1);
+            border-left: 3px solid #cccccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .info {
+            color: #aaaaaa;
+            background: rgba(120, 120, 120, 0.1);
+            border-left: 3px solid #aaaaaa;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .calculation-steps {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(50, 50, 50, 0.3);
+            border-left: 2px solid #888888;
+        }
+        
+        .step-number {
+            color: #cccccc;
+            font-weight: 700;
+        }
+        
+        .what-if-section {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+        }
+        
+        .scenario-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scenario-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: #ffffff;
+            border: 1px solid #888888;
+            padding: 10px 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .scenario-btn:hover, .scenario-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .scenario-btn::before {
+            content: ">> ";
+            color: #cccccc;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            color: #cccccc;
+            cursor: help;
+            margin-left: 5px;
+        }
+        
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 8px 12px;
+            border: 1px solid #ffffff;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .export-btn {
+            background: rgba(255, 255, 0, 0.1);
+            color: #ffff00;
+            border: 1px solid #cccc00;
+            padding: 8px 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            background: rgba(255, 255, 0, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+        }
+        
+        .blinking-cursor::after {
+            content: "_";
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .loading {
+            color: #00ff41;
+        }
+        
+        .loading::after {
+            content: "";
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ""; }
+            40% { content: "."; }
+            60% { content: ".."; }
+            80%, 100% { content: "..."; }
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .terminal-title {
+                font-size: 18px;
+            }
+            
+            .ascii-art {
+                font-size: 8px;
+            }
+            
+            .scenario-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="ascii-art">
+██████╗ ███████╗███╗   ██╗███████╗██╗ ██████╗ ███╗   ██╗     ██████╗  █████╗ ██╗      ██████╗
+██╔══██╗██╔════╝████╗  ██║██╔════╝██║██╔═══██╗████╗  ██║    ██╔════╝ ██╔══██╗██║     ██╔════╝
+██████╔╝█████╗  ██╔██╗ ██║███████╗██║██║   ██║██╔██╗ ██║    ██║  ███╗███████║██║     ██║     
+██╔═══╝ ██╔══╝  ██║╚██╗██║╚════██║██║██║   ██║██║╚██╗██║    ██║   ██║██╔══██║██║     ██║     
+██║     ███████╗██║ ╚████║███████║██║╚██████╔╝██║ ╚████║    ╚██████╔╝██║  ██║███████╗╚██████╗
+╚═╝     ╚══════╝╚═╝  ╚═══╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝     ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝
+            </div>
+            <h1 class="terminal-title">UK PENSION ALLOWANCE CALCULATOR</h1>
+            <p class="terminal-subtitle">// ANNUAL ALLOWANCE TAPERING CALCULATION TERMINAL //</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="terminal-window">
+                <div class="window-header">
+                    INPUT_MODULE.EXE
+                    <div class="window-controls">
+                        <div class="window-control"></div>
+                        <div class="window-control"></div>
+                        <div class="window-control"></div>
+                    </div>
+                </div>
+                <div class="window-content">
+                    <div class="prompt">ENTER YOUR FINANCIAL DATA:</div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="taxYear">TAX_YEAR
+                            <span class="tooltip" data-tooltip="Select tax year for current rates and thresholds">[?]</span>
+                        </label>
+                        <select class="terminal-select" id="taxYear">
+                            <option value="2024-25">2024/25</option>
+                            <option value="2025-26">2025/26</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="salary">ANNUAL_SALARY_GROSS
+                            <span class="tooltip" data-tooltip="Your total annual salary before tax and deductions">[?]</span>
+                        </label>
+                        <input type="number" class="terminal-input" id="salary" placeholder="150000" step="1000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="bonuses">BONUSES_AND_OTHER_INCOME
+                            <span class="tooltip" data-tooltip="Including bonuses, overtime, benefits in kind">[?]</span>
+                        </label>
+                        <input type="number" class="terminal-input" id="bonuses" placeholder="25000" step="1000" value="0">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="employerContribs">EMPLOYER_PENSION_CONTRIBUTIONS
+                            <span class="tooltip" data-tooltip="Total contributions made by your employer to your pension">[?]</span>
+                        </label>
+                        <input type="number" class="terminal-input" id="employerContribs" placeholder="20000" step="1000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="personalContribs">PERSONAL_PENSION_CONTRIBUTIONS
+                            <span class="tooltip" data-tooltip="Your personal contributions including salary sacrifice">[?]</span>
+                        </label>
+                        <input type="number" class="terminal-input" id="personalContribs" placeholder="10000" step="1000" value="0">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label" for="carryForward">CARRY_FORWARD_ALLOWANCE
+                            <span class="tooltip" data-tooltip="Total unused allowances from the last 3 tax years">[?]</span>
+                        </label>
+                        <input type="number" class="terminal-input" id="carryForward" placeholder="50000" step="1000" value="0">
+                    </div>
+                    
+                    <button class="execute-btn" onclick="executeCalculation()">
+                        >> EXECUTE CALCULATION <<
+                    </button>
+                </div>
+            </div>
+            
+            <div class="terminal-window">
+                <div class="window-header">
+                    OUTPUT_DISPLAY.EXE
+                    <div class="window-controls">
+                        <div class="window-control"></div>
+                        <div class="window-control"></div>
+                        <div class="window-control"></div>
+                    </div>
+                </div>
+                <div class="window-content">
+                    <div id="output-content">
+                        <div class="prompt blinking-cursor">AWAITING INPUT DATA</div>
+                        <div style="margin-top: 20px; color: #666; font-size: 12px;">
+                            > Initialize calculation engine...<br>
+                            > Load tax year parameters...<br>
+                            > Ready for input processing...<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-window what-if-section">
+            <div class="window-header">
+                SCENARIO_ANALYSIS.EXE
+                <div class="window-controls">
+                    <div class="window-control"></div>
+                    <div class="window-control"></div>
+                    <div class="window-control"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="prompt">WHAT-IF SCENARIO ANALYSIS:</div>
+                
+                <div class="scenario-buttons">
+                    <button class="scenario-btn" onclick="runScenario('reduceSalary')">SALARY_REDUCTION_-10K</button>
+                    <button class="scenario-btn" onclick="runScenario('increaseContribs')">INCREASE_CONTRIBUTIONS</button>
+                    <button class="scenario-btn" onclick="runScenario('optimizeContribs')">OPTIMIZE_STRATEGY</button>
+                    <button class="scenario-btn" onclick="runScenario('salaryVsContribs')">SALARY_VS_CONTRIBUTIONS</button>
+                </div>
+                
+                <div id="scenario-output" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tax year parameters
+        const TAX_YEAR_PARAMS = {
+            '2024-25': {
+                fullAA: 60000,
+                taperthreshold: 260000,
+                minimumAA: 4000
+            },
+            '2025-26': {
+                fullAA: 60000,
+                taperthreshold: 260000,
+                minimumAA: 4000
+            }
+        };
+
+        let currentResults = null;
+
+        function executeCalculation() {
+            const outputContent = document.getElementById('output-content');
+            outputContent.innerHTML = '<div class="loading">PROCESSING</div>';
+            
+            setTimeout(() => {
+                performCalculation();
+            }, 1500);
+        }
+
+        function performCalculation() {
+            const taxYear = document.getElementById('taxYear').value;
+            const salary = parseFloat(document.getElementById('salary').value) || 0;
+            const bonuses = parseFloat(document.getElementById('bonuses').value) || 0;
+            const employerContribs = parseFloat(document.getElementById('employerContribs').value) || 0;
+            const personalContribs = parseFloat(document.getElementById('personalContribs').value) || 0;
+            const carryForward = parseFloat(document.getElementById('carryForward').value) || 0;
+            
+            // Validation
+            if (salary <= 0) {
+                displayError('ERROR: INVALID SALARY INPUT');
+                return;
+            }
+            
+            const params = TAX_YEAR_PARAMS[taxYear];
+            
+            // Core calculations
+            const thresholdIncome = salary + bonuses - personalContribs;
+            const adjustedIncome = salary + bonuses + employerContribs;
+            
+            let taperReduction = 0;
+            let finalAA = params.fullAA;
+            
+            if (adjustedIncome > params.taperthreshold) {
+                const excessIncome = adjustedIncome - params.taperthreshold;
+                taperReduction = Math.min(excessIncome / 2, params.fullAA - params.minimumAA);
+                finalAA = Math.max(params.fullAA - taperReduction, params.minimumAA);
+            }
+            
+            const totalAvailable = finalAA + carryForward;
+            
+            currentResults = {
+                thresholdIncome,
+                adjustedIncome,
+                taperReduction,
+                finalAA,
+                totalAvailable,
+                params,
+                inputs: { salary, bonuses, employerContribs, personalContribs, carryForward }
+            };
+            
+            // Generate warnings
+            const warnings = generateWarnings(personalContribs, totalAvailable, thresholdIncome, adjustedIncome, params.taperthreshold);
+            
+            displayResults(currentResults, warnings);
+        }
+        
+        function generateWarnings(personalContribs, totalAvailable, thresholdIncome, adjustedIncome, threshold) {
+            const warnings = [];
+            
+            if (personalContribs > totalAvailable) {
+                warnings.push({
+                    type: 'warning',
+                    message: `WARNING: ANNUAL ALLOWANCE EXCEEDED!\nCurrent: £${personalContribs.toLocaleString()} | Available: £${totalAvailable.toLocaleString()}`
+                });
+            }
+            
+            if (adjustedIncome > threshold) {
+                warnings.push({
+                    type: 'info',
+                    message: `INFO: TAPERING ACTIVE\nReduction: £${((adjustedIncome - threshold) / 2).toLocaleString()}`
+                });
+            }
+            
+            if (thresholdIncome > 110000) {
+                warnings.push({
+                    type: 'warning',
+                    message: 'WARNING: HIGH_THRESHOLD_INCOME\nMay affect personal allowance'
+                });
+            }
+            
+            if (personalContribs < totalAvailable * 0.5 && totalAvailable > 10000) {
+                warnings.push({
+                    type: 'success',
+                    message: `SUCCESS: UNUSED_ALLOWANCE_AVAILABLE\n£${(totalAvailable - personalContribs).toLocaleString()} remaining`
+                });
+            }
+            
+            return warnings;
+        }
+        
+        function displayResults(results, warnings) {
+            const outputContent = document.getElementById('output-content');
+            
+            let html = `
+                <div class="prompt">CALCULATION COMPLETE:</div>
+                
+                <div class="output-line">
+                    <span class="output-label">THRESHOLD_INCOME:</span> 
+                    <span class="output-value">£${results.thresholdIncome.toLocaleString()}</span>
+                </div>
+                
+                <div class="output-line">
+                    <span class="output-label">ADJUSTED_INCOME:</span> 
+                    <span class="output-value">£${results.adjustedIncome.toLocaleString()}</span>
+                </div>
+                
+                <div class="output-line">
+                    <span class="output-label">TAPER_REDUCTION:</span> 
+                    <span class="output-value">£${results.taperReduction.toLocaleString()}</span>
+                </div>
+                
+                <div class="output-line">
+                    <span class="output-label">ANNUAL_ALLOWANCE:</span> 
+                    <span class="output-value">£${results.finalAA.toLocaleString()}</span>
+                </div>
+                
+                <div class="output-line">
+                    <span class="output-label">TOTAL_AVAILABLE:</span> 
+                    <span class="output-value">£${results.totalAvailable.toLocaleString()}</span>
+                </div>
+            `;
+            
+            // Add warnings/messages
+            if (warnings.length > 0) {
+                html += '<br>';
+                warnings.forEach(warning => {
+                    html += `<div class="${warning.type}">${warning.message}</div>`;
+                });
+            }
+            
+            // Add calculation steps
+            html += `
+                <div class="calculation-steps">
+                    <div class="prompt">CALCULATION_STEPS:</div>
+                    
+                    <div class="step">
+                        <span class="step-number">[1]</span> THRESHOLD_INCOME = 
+                        £${results.inputs.salary.toLocaleString()} + £${results.inputs.bonuses.toLocaleString()} - £${results.inputs.personalContribs.toLocaleString()} 
+                        = £${results.thresholdIncome.toLocaleString()}
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">[2]</span> ADJUSTED_INCOME = 
+                        £${results.inputs.salary.toLocaleString()} + £${results.inputs.bonuses.toLocaleString()} + £${results.inputs.employerContribs.toLocaleString()} 
+                        = £${results.adjustedIncome.toLocaleString()}
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">[3]</span> TAPER_CHECK = 
+                        ${results.adjustedIncome > results.params.taperthreshold 
+                            ? `ADJUSTED_INCOME (£${results.adjustedIncome.toLocaleString()}) > THRESHOLD (£${results.params.taperthreshold.toLocaleString()})\nREDUCTION = £${results.taperReduction.toLocaleString()}` 
+                            : 'NO_TAPERING_REQUIRED'
+                        }
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">[4]</span> FINAL_AA = 
+                        £${results.params.fullAA.toLocaleString()} - £${results.taperReduction.toLocaleString()} = £${results.finalAA.toLocaleString()}
+                    </div>
+                </div>
+                
+                <div class="export-section">
+                    <div class="prompt">EXPORT_OPTIONS:</div>
+                    <button class="export-btn" onclick="exportResults('pdf')">[GENERATE_PDF]</button>
+                    <button class="export-btn" onclick="exportResults('csv')">[EXPORT_CSV]</button>
+                </div>
+            `;
+            
+            outputContent.innerHTML = html;
+        }
+        
+        function displayError(message) {
+            const outputContent = document.getElementById('output-content');
+            outputContent.innerHTML = `
+                <div class="prompt">SYSTEM ERROR:</div>
+                <div class="warning">${message}</div>
+                <div style="margin-top: 10px; color: #666; font-size: 12px;">
+                    > Check input values and try again...<br>
+                    > System ready for retry...<br>
+                </div>
+            `;
+        }
+        
+        function runScenario(scenario) {
+            if (!currentResults) {
+                alert('ERROR: RUN CALCULATION FIRST');
+                return;
+            }
+            
+            const scenarioOutput = document.getElementById('scenario-output');
+            scenarioOutput.classList.remove('hidden');
+            
+            // Reset button states
+            document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let html = '';
+            
+            switch(scenario) {
+                case 'reduceSalary':
+                    html = generateSalaryReductionScenario();
+                    break;
+                case 'increaseContribs':
+                    html = generateIncreaseContribsScenario();
+                    break;
+                case 'optimizeContribs':
+                    html = generateOptimizeScenario();
+                    break;
+                case 'salaryVsContribs':
+                    html = generateSalaryVsContribsScenario();
+                    break;
+            }
+            
+            scenarioOutput.innerHTML = html;
+        }
+        
+        function generateSalaryReductionScenario() {
+            const newSalary = currentResults.inputs.salary - 10000;
+            const newAdjusted = newSalary + currentResults.inputs.bonuses + currentResults.inputs.employerContribs;
+            
+            let newTaper = 0;
+            let newAA = currentResults.params.fullAA;
+            
+            if (newAdjusted > currentResults.params.taperthreshold) {
+                newTaper = Math.min((newAdjusted - currentResults.params.taperthreshold) / 2, 
+                                  currentResults.params.fullAA - currentResults.params.minimumAA);
+                newAA = Math.max(currentResults.params.fullAA - newTaper, currentResults.params.minimumAA);
+            }
+            
+            return `
+                <div class="prompt">SCENARIO: SALARY_REDUCTION_-£10,000</div>
+                <div class="output-line">
+                    <span class="output-label">CURRENT_AA:</span> 
+                    <span class="output-value">£${currentResults.finalAA.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">NEW_AA:</span> 
+                    <span class="output-value">£${newAA.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">AA_INCREASE:</span> 
+                    <span class="output-value">£${(newAA - currentResults.finalAA).toLocaleString()}</span>
+                </div>
+                <div class="info">
+                    NET_IMPACT: £${((newAA - currentResults.finalAA) - 10000).toLocaleString()}
+                    (considering salary reduction)
+                </div>
+            `;
+        }
+        
+        function generateIncreaseContribsScenario() {
+            const remaining = currentResults.totalAvailable - currentResults.inputs.personalContribs;
+            const taxRelief = remaining * 0.4; // Assuming 40% rate
+            
+            return `
+                <div class="prompt">SCENARIO: INCREASE_CONTRIBUTIONS</div>
+                <div class="output-line">
+                    <span class="output-label">CURRENT_CONTRIBUTIONS:</span> 
+                    <span class="output-value">£${currentResults.inputs.personalContribs.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">REMAINING_ALLOWANCE:</span> 
+                    <span class="output-value">£${remaining.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">TAX_RELIEF_VALUE_40%:</span> 
+                    <span class="output-value">£${taxRelief.toLocaleString()}</span>
+                </div>
+                <div class="${remaining > 0 ? 'success' : 'warning'}">
+                    STATUS: ${remaining > 0 ? 'CAPACITY_AVAILABLE' : 'AT_LIMIT'}
+                </div>
+            `;
+        }
+        
+        function generateOptimizeScenario() {
+            const optimalContrib = Math.min(currentResults.totalAvailable, 
+                                          currentResults.inputs.salary * 0.4); // Conservative 40% rule
+            const taxSaving = optimalContrib * 0.4;
+            const netCost = optimalContrib * 0.6;
+            
+            return `
+                <div class="prompt">SCENARIO: OPTIMIZE_STRATEGY</div>
+                <div class="output-line">
+                    <span class="output-label">RECOMMENDED_CONTRIBUTION:</span> 
+                    <span class="output-value">£${optimalContrib.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">TAX_RELIEF_SAVING:</span> 
+                    <span class="output-value">£${taxSaving.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">NET_COST_TO_YOU:</span> 
+                    <span class="output-value">£${netCost.toLocaleString()}</span>
+                </div>
+                <div class="info">
+                    EFFICIENCY: ${((optimalContrib / currentResults.totalAvailable) * 100).toFixed(1)}% 
+                    of available allowance utilized
+                </div>
+            `;
+        }
+        
+        function generateSalaryVsContribsScenario() {
+            const salaryReduction = 20000;
+            const newSalary = currentResults.inputs.salary - salaryReduction;
+            const newAdjusted = newSalary + currentResults.inputs.bonuses + currentResults.inputs.employerContribs + salaryReduction;
+            
+            let newTaper = 0;
+            let newAA = currentResults.params.fullAA;
+            
+            if (newAdjusted > currentResults.params.taperthreshold) {
+                newTaper = Math.min((newAdjusted - currentResults.params.taperthreshold) / 2,
+                                  currentResults.params.fullAA - currentResults.params.minimumAA);
+                newAA = Math.max(currentResults.params.fullAA - newTaper, currentResults.params.minimumAA);
+            }
+            
+            const taxSaving = salaryReduction * 0.42; // 40% + 2% NI
+            const netBenefit = taxSaving + (newAA - currentResults.finalAA);
+            
+            return `
+                <div class="prompt">SCENARIO: SALARY_SACRIFICE_£20K</div>
+                <div class="output-line">
+                    <span class="output-label">TAX_NI_SAVING:</span> 
+                    <span class="output-value">£${taxSaving.toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">AA_CHANGE:</span> 
+                    <span class="output-value">£${(newAA - currentResults.finalAA).toLocaleString()}</span>
+                </div>
+                <div class="output-line">
+                    <span class="output-label">NET_BENEFIT:</span> 
+                    <span class="output-value">£${netBenefit.toLocaleString()}</span>
+                </div>
+                <div class="${netBenefit > 0 ? 'success' : 'warning'}">
+                    RECOMMENDATION: ${netBenefit > 0 ? 'SALARY_SACRIFICE_BENEFICIAL' : 'DIRECT_CONTRIBUTION_BETTER'}
+                </div>
+            `;
+        }
+        
+        function exportResults(format) {
+            if (format === 'pdf') {
+                alert('PDF_EXPORT: Report generation initiated...\nComprehensive analysis would be generated');
+            } else if (format === 'csv') {
+                alert('CSV_EXPORT: Data export initiated...\nSpreadsheet format would be generated');
+            }
+        }
+        
+        // Initialize with sample data
+        window.onload = function() {
+            document.getElementById('salary').value = '150000';
+            document.getElementById('bonuses').value = '25000';
+            document.getElementById('employerContribs').value = '20000';
+            document.getElementById('personalContribs').value = '10000';
+        };
+    </script>
+</body>
+</html>
